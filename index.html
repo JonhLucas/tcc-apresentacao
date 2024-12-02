@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>reveal.js</title>
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/moon.css">
+
+		<style>
+
+			/* Slide com layout flex */
+			.slide-grid {
+			  display: flex;
+			  flex-direction: column;
+			  align-items: center;
+			  justify-content: space-between;
+			  height: 100%;
+			  padding: 20px;
+			  box-sizing: border-box;
+			}
+		
+			/* Conteúdo textual à esquerda */
+			.content {
+			  width: 60%; /* Ocupa 60% da largura do slide */
+			  padding: 20px;
+			}
+		
+			/* Grid de imagens à direita */
+			.image-grid {
+			  display: grid;
+			  grid-template-columns: repeat(2, 1fr); /* 2 colunas no grid */
+			  gap: 10px; /* Espaçamento entre as imagens */
+			  width: 35%; /* Ocupa 35% da largura do slide */
+			}
+		
+			/* Estilização das imagens */
+			img {
+			  width: 100%;
+			  height: auto;
+			  border-radius: 5px; /* Canto arredondado opcional */
+			}
+
+			th {
+				text-align: center;
+				vertical-align: middle;
+			}
+		  </style>
+		<!-- Theme used for syntax highlighted code -->
+		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<section>
+					<p>Universidade Federal de Alagoas</p>
+					<p>   </p>
+					<p>   </p>
+					<h2 >Identificação de sistemas usando NARX com termos transcendentes</h2>
+					<p>   </p>
+					Jonh Lucas Alves da Silva
+				</section>
+				<!--section>
+					<h3>Modelagem de sistemas</h3>
+					<p class="fragment" data-fragment-index="1">Caixa branca</p>
+					<p class="fragment">princípios da física</p>
+					<p class="fragment" data-fragment-index="1">Caixa preta</p>
+					<p class="fragment">Abordagem experimental</p>
+					<p class="fragment" data-fragment-index="1">Caixa cinza</p>
+					<p class="fragment">Conhecimento prévio + Algoritmo de otimização</p>
+				</section-->
+				<section data-markdown>
+					<script type="text/template">
+						<!-- .slide: class="fragmented-lists" -->
+
+						## Modelagem de sistemas
+						- Caixa branca<!-- .element: class="fragment" data-fragment-index="1" -->
+							- Princípios da física <!-- .element: class="fragment" data-fragment-index="2" -->
+						- Caixa preta <!-- .element: class="fragment" data-fragment-index="1" -->
+							- Abordagem experimental <!-- .element: class="fragment" data-fragment-index="3" -->
+						- Caixa cinza <!-- .element: class="fragment" data-fragment-index="1" -->
+							- Conhecimento prévio + Algoritmo de otimização <!-- .element: class="fragment" data-fragment-index="4" -->
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						<!-- .slide: class="fragmented-lists" -->
+
+						## Objetivos
+						- Implementar algoritmos clássicos para seleção de estrutura.<!-- .element: class="fragment" data-fragment-index="1" -->
+						- Desenvolver uma rotina para adição de termos não lineares ao modelo. <!-- .element: class="fragment" data-fragment-index="1" -->
+						- Usar predições livres para validar os modelos. <!-- .element: class="fragment" data-fragment-index="1" -->
+						- Verificar o ganho ao aplicar funções não lineares aos regressores candidatos. <!-- .element: class="fragment" data-fragment-index="1" -->
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						<!-- .slide: class="fragmented-lists" style="text-align: left;"-->
+
+						### Narx polinomial
+						#### Características
+						- representação legível.<!-- .element: class="fragment" data-fragment-index="1" -->
+						- estimação facilitada. <!-- .element: class="fragment" data-fragment-index="2" -->
+						- simulação simples <!-- .element: class="fragment" data-fragment-index="3" -->
+						- capacidade de representação <!-- .element: class="fragment" data-fragment-index="4" -->
+						#### Forma geral
+						$$y(k) = F^{\ell}[y(k-1) \dots y(k-n_y) \quad u(k-1) \dots u(k-n_u)]$$
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						<!-- .slide: class="fragmented-lists" style="text-align: left;"-->
+
+						## Motivação
+						- Não linearidade fraca.<!-- .element: class="fragment" data-fragment-index="1" -->
+						- Melhor uso dos dados, ganho de informação. <!-- .element: class="fragment" data-fragment-index="1" -->
+						- Aumento da capacidade de representação <!-- .element: class="fragment" data-fragment-index="1" -->
+						## Prosposta
+						Adicionar regressores não lineares
+					</script>
+				</section>
+
+				<section>
+					<div style="display: flex; align-items: center; justify-content: center; gap: 60px;">
+						<!-- Imagem -->
+						<div style="flex: 0 0 50%; text-align: center;">
+							<img src="images/narxSISOPseudoH.png" alt="Descrição da imagem" 
+							 style="max-width: 100%; max-height: 400px; border-radius: 15px;">
+						</div>
+				  
+						<!-- Texto -->
+						<div style="flex: 0 0 50%; text-align: left;">
+							<h3 style="text-align: center;">Narx Proposto</h3>
+							<p>\[\begin{aligned} y(k) &amp; = F^{\ell}(y, u, v, w) \\  u(k)&amp; = f(y(k)) \\ v(k) &amp; = g(u(k)) \end{aligned} \]</p>
+							<h3 style="text-align: center;">Exemplo</h3>
+							<p>\[\begin{aligned} \hat{y}(k) &amp; = θ_1 + θ_2 y(k - 1) \\ &amp; + θ_3 u(k - 1) + θ_4 sin[y(k - 1)] \\ &amp; + θ_5 sin[u(k - 1)] \end{aligned} \]</p>
+							
+						</div>
+					</div>
+				</section>
+
+				<section>
+					<h2>Processo proposto</h2>
+					<div style="text-align: center;">
+						<img src="images/processo-proposto.png" alt="Descrição da imagem" 
+							 style="max-width: 80%; max-height: 400px; border-radius: 10px;">
+					  </div>
+				</section>
+				<section>
+					<section>
+						<h1>Tanques acoplados</h1>
+						
+					</section>
+					<section>
+						<h2>Tanque superior</h2>
+						<div style="text-align: left;">
+							<p>Modelo proposto</p>
+							<p style="font-size:25px;">$y_1(k) = 0.02485 \cdot u(k-12)+ 1.00029 \cdot y_1(k-1) - 0.04768 \cdot \sqrt{y_1(k-1)}$</p>
+							<p>Modelo polinomial</p>
+							<p style="font-size:25px;">$y_1(k) = 0.99289 \cdot y_1(k-1) + 0.02485 \cdot u(k - 12) - 0.07151$</p>
+							
+						</div>
+						<table >
+								<tr>
+								  <th rowspan="2">Métrica</th>
+								  <th colspan="2">Polinomial</th>
+								  <th colspan="2">Proposto</th>
+								</tr>
+								<tr>
+									<th>Estimação</th>
+									<th>Validação</th>
+									<th>Estimação</th>
+									<th>Validação</th>
+								</tr>
+								<tr>
+									<th>RMSE</th>
+									<th>0.398</th>
+									<th>1.131</th>
+									<th>0.377</th>
+									<th>0.649</th>
+								</tr>
+								<tr>
+									<th>MAPE</th>
+									<th>4.541%</th>
+									<th>35.893%</th>
+									<th>3.693%</th>
+									<th>6.136%</th>
+								</tr>
+							</table>
+						
+					</section>
+					<section>
+						<h3>Simulações</h3>
+						<div style="display: flex; justify-content: center; align-items: center;">
+							<script type="text/javascript">window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
+							<script src="https://cdn.plot.ly/plotly-2.12.1.min.js"></script>
+							<div id="1838bffa-a227-4a44-a00b-2095590dc00b" class="plotly-graph-div">
+								<script src="scripts/result_tank1.js"></script>  
+							</div>
+						</div>
+					</section>
+
+					<section>
+						<h2>Tanque inferior</h2>
+						<div style="text-align: left;">
+							<p>Modelo proposto</p>
+							<p style="font-size:25px;">\[\begin{aligned} 
+								y_2(k) = &amp; \:\;0.66020 \cdot y_2(k-1) + 0.33451 \cdot y_2(k-2) + 0.05483 \cdot \sqrt{y_1(k-1)} \nonumber \\
+    							&amp; \:- 0.02333 \cdot \sqrt{y_2(k-1)} - 0.052261
+								\end{aligned} \]</p>
+							<p>Modelo polinomial</p>
+				
+							<p style="font-size:25px;">\[\begin{aligned} 
+								y_2(k) = &amp;\: 0.65144 \cdot y_2(k-1) + 0.3344 \cdot y_2(k-2) + 0.01255 \cdot y_1(k-1) \nonumber \\ 
+								&amp;\:- 0.00018\cdot y_1(k-1)^2   + 0.00025\cdot y_2(k-1)^2
+								\end{aligned} \]</p>
+							<table style="font-size:28px;">
+								<tr>
+								  <th rowspan="2">Métrica</th>
+								  <th colspan="2">Polinomial</th>
+								  <th colspan="2">Proposto</th>
+								</tr>
+								<tr>
+									<th>Estimação</th>
+									<th>Validação</th>
+									<th>Estimação</th>
+									<th>Validação</th>
+								</tr>
+								<tr>
+									<th>RMSE</th>
+									<th>0.2648</th>
+									<th>0.5103</th>
+									<th>0.1378</th>
+									<th>0.3574</th>
+								</tr>
+								<tr>
+									<th>MAPE</th>
+									<th>7.244%</th>
+									<th>11.412%</th>
+									<th>3.034%</th>
+									<th>3.786%</th>
+								</tr>
+							</table>
+						</div>
+					</section>
+					<section>
+						<h3>Simulações</h3>
+						<div style="display: flex; justify-content: center; align-items: center;">
+							<script type="text/javascript">window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
+							<script src="https://cdn.plot.ly/plotly-2.12.1.min.js"></script>
+							<div id="bb5efc2c-59a3-4f79-9299-df4963845f81" class="plotly-graph-div">
+								<script src="scripts/result_tank2.js"></script>  
+							</div>
+						</div>
+					</section>
+				</section>
+
+				<section>
+					<section>
+						<h1>Motores acoplados à polia</h1>
+					</section>
+					<section>
+						<div style="text-align: left;">
+							<p>Modelo proposto</p>
+							<p style="font-size:23px;">\[\begin{aligned} 
+								y_m(k) =&- 0.34066 \cdot y_m(k-3) + 0.01868\cdot u(k-1)\cdot y_m(k-6) + 0.03369\cdot u(k-4)  \\ 
+								&+ 0.02055\cdot u(k-6) + 0.02805 \cdot u(k-5)\cdot y_m(k-10)\cdot tanh(2 \cdot y_m(k-1))  \\
+								&+ 0.00813\cdot u(k-3)\cdot u(k-9)^2 + 0.02115\cdot u(k-7) + 1.09045\cdot y_m(k-1)  \\
+								&+ 0.041\cdot y_m(k-10) + 0.00914\cdot u(k-5)^2\cdot tanh(2 \cdot y_m(k-1))
+								\end{aligned} \]</p>
+							
+							<p>Modelo polinomial</p>
+							<p style="font-size:23px;">\[\begin{aligned} 
+								y_m(k) =&\; 1.16519 \cdot y_m(k-1) + 0.00923 \cdot u(k-3) \cdot u^2(k-9) - 0.35792 \cdot y_m(k-3) \nonumber \\ 
+								& + 0.03193 \cdot u(k-4) + 0.01202 \cdot u(k-5) \cdot u(k-6) \cdot y_m(k-10)  \nonumber \\
+								& + 0.05274 \cdot y_m(k-9) + 0.02903 \cdot u(k-6)
+								\end{aligned} \]</p>
+
+							<table style="font-size:28px;">
+								<tr>
+								  <th rowspan="2">Métrica</th>
+								  <th colspan="2">Polinomial</th>
+								  <th colspan="2">Proposto</th>
+								</tr>
+								<tr>
+									<th>Estimação</th>
+									<th>Validação</th>
+									<th>Estimação</th>
+									<th>Validação</th>
+								</tr>
+								<tr>
+									<th>RMSE</th>
+									<th>31.8347</th>
+									<th>49.0200</th>
+									<th>26.9585</th>
+									<th>38.5658</th>
+								</tr>
+								<tr>
+									<th>MAPE</th>
+									<th>92.463%</th>
+									<th>34.786%</th>
+									<th>78.201%</th>
+									<th>29.081%</th>
+								</tr>
+							</table>
+						</div>
+					</section>
+					<section>
+						<h3>Simulações</h3>
+						<div style="display: flex; justify-content: center; align-items: center;">
+							<script type="text/javascript">window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
+							<script src="https://cdn.plot.ly/plotly-2.12.1.min.js"></script>
+							<div id="4dcc50e6-a2b7-4659-8a25-a45acc0f80df" class="plotly-graph-div">
+								<script src="scripts/result_couplemotors.js"></script>  
+							</div>
+						</div>
+					</section>
+				</section>
+
+				<section>
+					<section>
+						<h1>Sistema bola e barra</h1>
+					</section>
+					<section>
+						<div style="text-align: left;">
+							<p>Modelo proposto</p>
+							<p style="font-size:23px;">\[\begin{aligned} 
+								\dot y(k) =& -0.09919 \cdot u(k-4) + 0.04885 \cdot u(k-8)\cdot \cos(\dot y(k-1)) + 0.79278\cdot \dot y(k-1) \nonumber \\
+								& - 0.03404 \cdot \dot y(k-8) \cdot \cos(u(k-5))  - 0.00015 \cdot \cos(u(k-2)) \cdot sgn(\dot y(k-1)) \nonumber \\
+								& + 0.40497\cdot \dot y(k-2) - 0.09626 \cdot \dot{y}(k-3) - 0.06745 \cdot \dot{y}(k-4) 
+								\end{aligned} \]</p>
+							
+							<p>Modelo polinomial</p>
+							<p style="font-size:23px;">\[\begin{aligned} 
+								\dot y(k) =& \;\;1.16838 \cdot \dot{y}(k-1)  -0.16927\cdot \dot{y}(k-6)  - 0.04291\cdot{u}(k-2) + 0.03349 \cdot{u}(k-7) \nonumber \\
+								& - 1.90190\cdot{u}(k-2)\cdot \dot{y}(k-1)^2 + 27.96621\cdot \dot{y}(k-1)^2 \cdot \dot{y}(k-2) \nonumber \\
+								&  - 27.96489 \cdot \dot{y}(k-1)^3
+								\end{aligned} \]</p>
+
+							<table style="font-size:28px;">
+								<tr>
+								  <th rowspan="2">Métrica</th>
+								  <th colspan="2">Polinomial</th>
+								  <th colspan="2">Proposto</th>
+								</tr>
+								<tr>
+									<th>Estimação</th>
+									<th>Validação</th>
+									<th>Estimação</th>
+									<th>Validação</th>
+								</tr>
+								<tr>
+									<th>RMSE</th>
+									<th>$4.86 \cdot 10^{-3}$</th>
+									<th>$5.14 \cdot 10^{-3}$</th>
+									<th>$7.64 \cdot 10^{-4}$</th>
+									<th>$5.62 \cdot 10^{-4}$</th>
+								</tr>
+								<tr>
+									<th>MAPE</th>
+									<th>$1.5378\%$</th>
+									<th>$0.5769\%$</th>
+									<th>$1.3675\%$</th>
+									<th>$0.1225\%$</th>
+								</tr>
+							</table>
+						</div>
+					</section>
+
+					<section>
+						<h3>Simulações</h3>
+						<div style="display: flex; justify-content: center; align-items: center;">
+							<script type="text/javascript">window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
+							<script src="https://cdn.plot.ly/plotly-2.12.1.min.js"></script>                
+							<div id="e0931ee0-b8c6-42b0-ac6e-f4928e0ec03f" class="plotly-graph-div">
+								<script src="scripts/ballBeamSim.js"></script>
+							</div>  
+						</div>
+					</section>
+
+					<section>
+						<h3>Integração</h3>
+						<div style="display: flex; justify-content: center; align-items: center;">
+							<script type="text/javascript">window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
+							<script src="https://cdn.plot.ly/plotly-2.12.1.min.js"></script>                
+							<div id="7577104d-5893-47ea-adfb-67cc3cbd61aa" class="plotly-graph-div">
+								<script src="scripts/ballbeamintegra.js"></script>  
+							</div>  
+						</div>
+					</section>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						<!-- .slide: class="fragmented-lists" style="text-align: left;" -->
+						
+						## Considerações finais
+						
+						### Contribuições
+						- Estimação mais precisas.				<!-- .element: class="fragment" data-fragment-index="1" -->
+						- Melhor uso dos dados. <!-- .element: class="fragment" data-fragment-index="1" -->
+						- Ganho de complexidade. <!-- .element: class="fragment" data-fragment-index="1" -->
+						### Melhorias futuras
+						- Coleta de novos dados. <!-- .element: class="fragment" data-fragment-index="1" -->
+						- Adotar o modelo NARMAX. <!-- .element: class="fragment" data-fragment-index="1" -->
+						- Comparar com representações mais complexas. <!-- .element: class="fragment" data-fragment-index="1" -->
+					</script>
+				</section>
+			</div>
+		</div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script src="plugin/math/math.js"></script>
+		<!--script src="https://unpkg.com/reveal.js/dist/reveal.js"></script-->
+		<script>
+			// More info about initialization & config:
+			// - https://revealjs.com/initialization/
+			// - https://revealjs.com/config/
+			Reveal.initialize({
+				hash: true,
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealMarkdown, RevealHighlight, RevealNotes, RevealMath.KaTeX ]
+			});
+		</script>
+	</body>
+</html>
